@@ -1,0 +1,26 @@
+name: video_player_demo
+description: A video player demo with chart visualization.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '^3.7.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  video_player: ^2.8.2
+  chewie: ^1.7.4
+  fl_chart: ^0.66.2
+  path_provider: ^2.1.2
+  image_gallery_saver: ^2.0.3
+  permission_handler: ^11.3.0
+  html: ^0.15.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true 
