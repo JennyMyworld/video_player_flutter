@@ -294,7 +294,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
               ),
             ),
             onPressed: _saveFrame,
-            child: const Text('Save Current Frame'),
+            child: const Text('Save Current Image'),
           ),
         ],
       ),

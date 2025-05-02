@@ -25,8 +25,15 @@ class VideoPlayerDemo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 示例数据 - 这里使用一些随机数据作为图表数据
-    final List<double> chartData = List.generate(100, (index) => (index % 20) * 5.0);
+    // mock data
+    final List<double> chartData = [
+      2, 2, 2, 2, 2,
+      5, 5, 5,    
+      3, 3,    
+      6, 6, 6, 6, 
+      4, 4, 4,   
+      2, 2, 2
+    ];
 
     return Scaffold(
       appBar: AppBar(
