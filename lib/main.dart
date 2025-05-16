@@ -26,13 +26,21 @@ class VideoPlayerDemo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // mock data
-    final List<double> chartData = [
-      2, 2, 2, 2, 2,
-      5, 5, 5,    
-      3, 3,    
-      6, 6, 6, 6, 
-      4, 4, 4,   
-      2, 2, 2
+    final List<ChartDataPoint> chartData = [
+      ChartDataPoint(2, const Duration(milliseconds: 0)),
+      ChartDataPoint(2, const Duration(milliseconds: 500)),
+      ChartDataPoint(3, const Duration(milliseconds: 1000)),
+      ChartDataPoint(3, const Duration(milliseconds: 1500)),
+      ChartDataPoint(5, const Duration(milliseconds: 2000)),
+      ChartDataPoint(5, const Duration(milliseconds: 2500)),
+      ChartDataPoint(4, const Duration(milliseconds: 3000)),
+      ChartDataPoint(4, const Duration(milliseconds: 3500)),
+      ChartDataPoint(6, const Duration(milliseconds: 4000)),
+      ChartDataPoint(6, const Duration(milliseconds: 4500)),
+      ChartDataPoint(3, const Duration(milliseconds: 5000)),
+      ChartDataPoint(3, const Duration(milliseconds: 5500)),
+      ChartDataPoint(2, const Duration(milliseconds: 6000)),
+      ChartDataPoint(2, const Duration(milliseconds: 6500)),
     ];
 
     return Scaffold(

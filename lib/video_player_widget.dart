@@ -9,9 +9,17 @@ import 'package:path_provider/path_provider.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+// 定义数据点结构
+class ChartDataPoint {
+  final double value;
+  final Duration timestamp;
+
+  ChartDataPoint(this.value, this.timestamp);
+}
+
 class CustomVideoPlayer extends StatefulWidget {
   final String videoPath;
-  final List<double>? chartData;
+  final List<ChartDataPoint>? chartData;
 
   const CustomVideoPlayer({
     Key? key,
@@ -30,6 +38,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   double _currentPosition = 0;
   double _totalDuration = 0;
   bool _isInitialized = false;
+  bool _isDraggingVerticalLine = false;
 
   @override
   void initState() {
@@ -135,17 +144,14 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
     if (_videoPlayerController != null) {
       final Duration duration = Duration(milliseconds: position.toInt());
       _videoPlayerController!.seekTo(duration);
-      
-      // 如果视频是暂停状态，seek 后自动播放一小段然后暂停，以更新画面
-      if (!_videoPlayerController!.value.isPlaying) {
-        _videoPlayerController!.play();
-        Future.delayed(const Duration(milliseconds: 100), () {
-          if (_videoPlayerController != null) {
-            _videoPlayerController!.pause();
-          }
-        });
-      }
     }
+  }
+
+  // 根据时间戳找到对应的X坐标
+  double _getXPositionFromTime(Duration time) {
+    if (widget.chartData == null || widget.chartData!.isEmpty) return 0;
+    final totalDuration = _videoPlayerController?.value.duration ?? widget.chartData!.last.timestamp;
+    return time.inMilliseconds / totalDuration.inMilliseconds * (widget.chartData!.length - 1);
   }
 
   @override
@@ -182,13 +188,11 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
               IconButton(
                 icon: Icon(_videoPlayerController!.value.isPlaying ? Icons.pause : Icons.play_arrow),
                 onPressed: () {
-                  setState(() {
-                    if (_videoPlayerController!.value.isPlaying) {
-                      _videoPlayerController!.pause();
-                    } else {
-                      _videoPlayerController!.play();
-                    }
-                  });
+                  if (_videoPlayerController!.value.isPlaying) {
+                    _videoPlayerController!.pause();
+                  } else {
+                    _videoPlayerController!.play();
+                  }
                 },
                 iconSize: 32,
               ),
@@ -219,9 +223,6 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                 min: 0.0,
                 max: duration,
                 onChanged: (value) {
-                  setState(() {
-                    _currentPosition = value;
-                  });
                   _seekToPosition(value);
                 },
               ),
@@ -254,7 +255,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                       lineBarsData: [
                         LineChartBarData(
                           spots: widget.chartData!.asMap().entries.map((entry) {
-                            return FlSpot(entry.key.toDouble(), entry.value);
+                            return FlSpot(entry.key.toDouble(), entry.value.value);
                           }).toList(),
                           isCurved: true,
                           color: Colors.blue,
@@ -266,11 +267,45 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                       gridData: FlGridData(show: false),
                       titlesData: FlTitlesData(show: false),
                       borderData: FlBorderData(show: false),
+                      lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          tooltipBgColor: Colors.transparent,
+                        ),
+                        handleBuiltInTouches: false,
+                      ),
+                      extraLinesData: ExtraLinesData(
+                        verticalLines: [
+                          VerticalLine(
+                            x: _getXPositionFromTime(_videoPlayerController!.value.position),
+                            color: Colors.red,
+                            strokeWidth: 2,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 Positioned.fill(
                   child: GestureDetector(
+                    onHorizontalDragStart: (details) {
+                      setState(() {
+                        _isDraggingVerticalLine = true;
+                      });
+                    },
+                    onHorizontalDragUpdate: (details) {
+                      if (_isDraggingVerticalLine) {
+                        final box = context.findRenderObject() as RenderBox;
+                        final localPosition = box.globalToLocal(details.globalPosition);
+                        final relativeX = localPosition.dx / box.size.width;
+                        final timePosition = (relativeX * duration).clamp(0.0, duration);
+                        _seekToPosition(timePosition);
+                      }
+                    },
+                    onHorizontalDragEnd: (details) {
+                      setState(() {
+                        _isDraggingVerticalLine = false;
+                      });
+                    },
                     onTapDown: (details) {
                       final box = context.findRenderObject() as RenderBox;
                       final localPosition = box.globalToLocal(details.globalPosition);
